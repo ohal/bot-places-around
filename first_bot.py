@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 import logging, json, requests
@@ -29,11 +30,24 @@ def location(bot, update):
 		v='20180401',
 		ll=''+str(user_location.latitude)+ ',' +str(user_location.longitude),
 		query='coffee',
-		limit=1
+		#limit=5
 		)
 	resp = requests.get(url=url, params=params)
-	data = json.loads(resp.text)
-	print json.dumps(data, indent=4, sort_keys=True)
+	# data = json.loads(resp.text)
+	# print  json.dumps(data, indent=4, sort_keys=True)
+	data = resp.json()
+	items = data["response"]["groups"][0]["items"]
+	for item in items:
+		place_name = item["venue"]["name"].encode("utf-8")
+		place_address = item["venue"]["location"]["address"].encode("utf-8")
+		place_hours = item["venue"]["hours"]["status"]
+		place_rating = item["venue"]["rating"]
+		#place_url = item["venue"]["url"]
+		print place_name, place_rating
+		print place_address
+		print place_hours
+		#print place_url
+		print "\n"
 
 def type(bot, update): 
 	keyboard = [[InlineKeyboardButton("Option 1", callback_data='1'),
