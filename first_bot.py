@@ -30,7 +30,7 @@ def location(bot, update):
 		v='20180401',
 		ll=''+str(user_location.latitude)+ ',' +str(user_location.longitude),
 		query='coffee',
-		#limit=5
+		limit=3,
 		)
 	resp = requests.get(url=url, params=params)
 	# data = json.loads(resp.text)
@@ -38,15 +38,36 @@ def location(bot, update):
 	data = resp.json()
 	items = data["response"]["groups"][0]["items"]
 	for item in items:
+		reply_text = ""
+		place_url = None
+		place_hours = None
+		place_phone = None
 		place_name = item["venue"]["name"].encode("utf-8")
 		place_address = item["venue"]["location"]["address"].encode("utf-8")
-		place_hours = item["venue"]["hours"]["status"]
-		place_rating = item["venue"]["rating"]
-		#place_url = item["venue"]["url"]
-		print place_name, place_rating
-		print place_address
-		print place_hours
-		#print place_url
+		reply_text += str(place_name) + '\n' + str(place_address) + '\n'
+		
+		if "isOpen" in item["venue"]["hours"]:
+			place_hours = item["venue"]["hours"]["isOpen"]
+			reply_text += '\nВідкрито зараз: '
+			if place_hours == True:
+				reply_text += 'Так'
+			else:
+				reply_text += 'Ні'
+
+		if "formattedPhone" in 	item["venue"]["contact"]:
+			place_phone = item["venue"]["contact"]["formattedPhone"]
+			reply_text += '\nНомер телефону: ' +str(place_phone)
+
+		if "rating" in item["venue"]: 
+			place_rating = item["venue"]["rating"]
+			reply_text += '\nРейтинг: ' + str(place_rating) + '\n'
+	
+		if "url" in item["venue"]:
+			place_url = item["venue"]["url"]
+			reply_text += 'Сайт: ' + str(place_url)
+			print place_url
+
+		update.message.reply_text(reply_text)
 		print "\n"
 
 def type(bot, update): 
