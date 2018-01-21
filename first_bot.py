@@ -35,7 +35,7 @@ def location(bot, update):
     # update.message.reply_text('Maybe I can visit you sometime!' 'At last, tell me something about yourself.')
 
     keyboard = [[InlineKeyboardButton("Ресторан", callback_data='restaurant'),
-                 InlineKeyboardButton("Кафе", callback_data='coffee'),
+                 InlineKeyboardButton("Кафе", callback_data="coffee"),
                  InlineKeyboardButton("Бар", callback_data='bar')],
                 [InlineKeyboardButton("Обід", callback_data='lunch'), 
                  InlineKeyboardButton("Вечеря", callback_data='dinner')]]
@@ -46,9 +46,9 @@ def location(bot, update):
 def button(bot, update):
     query = update.callback_query
     type_of_place = query.data
-    bot.edit_message_text(text="Ви обрали наступний тип закладу: {}".format(query.data),
-                          chat_id=query.message.chat_id,
-                          message_id=query.message.message_id)
+    # bot.edit_message_text(text="Ви обрали наступний тип закладу: {}".format(query.data),
+    #                       chat_id=query.message.chat_id,
+    #                       message_id=query.message.message_id)
 
     params = dict(
         client_id='NLB5P2KIROZUMLVZMTZK4L5FRJ1WXPXNABP5FABPQBVWWI0D',
@@ -59,8 +59,8 @@ def button(bot, update):
         limit=3,
         )
     resp = requests.get(url=url, params=params)
-    # data = json.loads(resp.text)
-    # print  json.dumps(data, indent=4, sort_keys=True)
+    data = json.loads(resp.text)
+    print  json.dumps(data, indent=4, sort_keys=True)
     data = resp.json()
     items = data["response"]["groups"][0]["items"]
     for item in items:
@@ -70,8 +70,11 @@ def button(bot, update):
         place_phone = None
         place_name = item["venue"]["name"].encode("utf-8")
         place_address = item["venue"]["location"]["address"].encode("utf-8")
-        reply_text += str(place_name) + '\n' + str(place_address) + '\n'
-        
+        place_distance = item["venue"]["location"]["distance"]
+        place_latitude = item["venue"]["location"]["lat"]
+        place_longitude = item["venue"]["location"]["lng"]
+        reply_text += '<b>' + str(place_name) + '</b>\n<i>' + str(place_address) + '</i>\n'
+        reply_text += 'Відстань до закладу: ' + str(place_distance) + 'м. \n'
         if "isOpen" in item["venue"]["hours"]:
             place_hours = item["venue"]["hours"]["isOpen"]
             reply_text += '\nВідкрито зараз: '
@@ -88,14 +91,18 @@ def button(bot, update):
             place_rating = item["venue"]["rating"]
             reply_text += '\nРейтинг: ' + str(place_rating) + '\n'
     
-        if "url" in item["venue"]:
-            place_url = item["venue"]["url"]
-            reply_text += 'Сайт: ' + str(place_url)
-            print place_url
+        # if "url" in item["venue"]:
+        #     place_url = item["venue"]["url"]
+        #     reply_text += 'Сайт: ' + str(place_url)
+        #     print place_url
 
         bot.send_message(text=reply_text, 
+                         parse_mode='HTML',
                          chat_id=query.message.chat_id,
                          message_id=query.message.message_id)
+        bot.sendLocation(chat_id=query.message.chat_id,
+                         latitude=place_latitude,
+                         longitude=place_longitude)
         print "\n"
     
 
