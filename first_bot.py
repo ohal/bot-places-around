@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
 import logging, json, requests
@@ -11,8 +15,7 @@ url = 'https://api.foursquare.com/v2/venues/explore'
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def start(bot, update):
-	
+def start(bot, update):	
 	# bot.send_message(chat_id = update.message.chat_id, text="I'm a bot, please talk to me!")
 	update.message.reply_text('Hi!')
 
@@ -22,14 +25,13 @@ def location(bot, update):
 	logger.info("Location of %s: %f / %f", user.first_name, user_location.latitude,
                 user_location.longitude)
 	longitude = user_location.longitude
-	update.message.reply_text('Maybe I can visit you sometime! '
-'At last, tell me something about yourself.')
+	# update.message.reply_text('Maybe I can visit you sometime!' 'At last, tell me something about yourself.')
 	params = dict(
 		client_id='NLB5P2KIROZUMLVZMTZK4L5FRJ1WXPXNABP5FABPQBVWWI0D',
 		client_secret='NO11HX0UNHRTHOYXBFG4SLOJQOIUCWD15XNNB51XBMCS54PV',
 		v='20180401',
 		ll=''+str(user_location.latitude)+ ',' +str(user_location.longitude),
-		query='coffee',
+		query='bar',
 		limit=3,
 		)
 	resp = requests.get(url=url, params=params)
@@ -71,17 +73,20 @@ def location(bot, update):
 		print "\n"
 
 def type(bot, update): 
-	keyboard = [[InlineKeyboardButton("Option 1", callback_data='1'),
-                 InlineKeyboardButton("Option 2", callback_data='2')]]
+	keyboard = [[InlineKeyboardButton("Ресторан", callback_data='ресторан'),
+				 InlineKeyboardButton("Кафе", callback_data='coffee'),
+                 InlineKeyboardButton("Бар", callback_data='бар')],
+                [InlineKeyboardButton("Обід", callback_data='обід'), 
+                 InlineKeyboardButton("Піцерія", callback_data='піцерія')]]
 	reply_markup = InlineKeyboardMarkup(keyboard)
-	update.message.reply_text('Please choose: ', reply_markup=reply_markup)
+	update.message.reply_text('Оберіть тип закладу: ', reply_markup=reply_markup)
 
 def button(bot, update):
     query = update.callback_query
 
-    bot.edit_message_text(text="Selected option: {}".format(query.data),
+    bot.edit_message_text(text="Ви обрали наступний тип закладу: {}".format(query.data),
                           chat_id=query.message.chat_id,
-message_id=query.message.message_id)
+						  message_id=query.message.message_id)
 
 
 def main():
@@ -91,12 +96,15 @@ def main():
 	start_handler = CommandHandler('start', start)
 	dp.add_handler(start_handler) 
 
-	type_handler = CommandHandler('type', location)
-	dp.add_handler(type_handler)
+	type_handler = CommandHandler('type', type)
+	dp.add_handler(type_handler) 
 	dp.add_handler(CallbackQueryHandler(button))
 
-	location_handler = MessageHandler(Filters.location, location)
-	dp.add_handler(location_handler)
+	# location_handler = MessageHandler(Filters.location, location)
+	# dp.add_handler(location_handler)
+	typel_handler = MessageHandler(Filters.location, type)
+	dp.add_handler(typel_handler) 
+	dp.add_handler(CallbackQueryHandler(button))
 	#dp.add_handler(CallbackQueryHandler(button_location))
 
 	updater.start_polling()
