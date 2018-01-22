@@ -69,12 +69,12 @@ def button(bot, update):
         place_hours = None
         place_phone = None
         place_name = item["venue"]["name"].encode("utf-8")
+        place_id = item["venue"]["id"]
         place_address = item["venue"]["location"]["address"].encode("utf-8")
         place_distance = item["venue"]["location"]["distance"]
         place_latitude = item["venue"]["location"]["lat"]
         place_longitude = item["venue"]["location"]["lng"]
-        reply_text += '<b>' + str(place_name) + '</b>\n<i>' + str(place_address) + '</i>\n'
-        reply_text += 'Відстань до закладу: ' + str(place_distance) + 'м. \n'
+        reply_text += 'Відстань до закладу: ' + str(place_distance) + 'м.'
         if "isOpen" in item["venue"]["hours"]:
             place_hours = item["venue"]["hours"]["isOpen"]
             reply_text += '\nВідкрито зараз: '
@@ -96,13 +96,19 @@ def button(bot, update):
         #     reply_text += 'Сайт: ' + str(place_url)
         #     print place_url
 
+        # bot.sendLocation(chat_id=query.message.chat_id,
+        #                  latitude=place_latitude,
+        #                  longitude=place_longitude)
+        bot.sendVenue(chat_id=query.message.chat_id,
+                      latitude=place_latitude,
+                      longitude=place_longitude,
+                      title=place_name, 
+                      address=place_address,
+                      foursquare_id=place_id)
         bot.send_message(text=reply_text, 
                          parse_mode='HTML',
                          chat_id=query.message.chat_id,
                          message_id=query.message.message_id)
-        bot.sendLocation(chat_id=query.message.chat_id,
-                         latitude=place_latitude,
-                         longitude=place_longitude)
         print "\n"
     
 
